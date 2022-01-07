@@ -45,3 +45,20 @@ abline(v = PI(samples, prob=.89 ), col = "red")
 abline(v = HPDI(samples, prob=.89), col = "blue")
 
 # 4)
+#AAAAAARGGGGH
+
+#water.discrimination = rbinom(1, 1, .2)
+#water.discrimination = sample(c("W","L"), 1, prob = )
+observations = rbinom(20, 1, .7)
+observations
+
+for (i in 1:20) { 
+observations[i] = ifelse(observations[i] == 1, rbinom(1, 1, .2), 0)
+}
+observations
+
+
+water.discrimination = observations
+df = data.frame(observations=observations,
+                water.discrimination=water.discrimination)
+df$water.discrimination = ifelse(df$observations == 1, rbinom(1, 1, .2), 0)
