@@ -4,15 +4,15 @@ require(rethinking)
 
 n = 100
 # the grid
-p_grid <- seq(0, 1, length.out=n)
+p_grid = seq(0, 1, length.out=n)
 # the prior
-prior <- rep(1, n)
+prior = rep(1, n)
 # the likelihood at each value in grid
-likelihood <- dbinom(4 , size=15, prob=p_grid)
+likelihood = dbinom(4 , size=15, prob=p_grid)
 # compute product of likelihood and prior
-unstd.posterior <- likelihood*prior
+unstd.posterior = likelihood*prior
 # standardize the posterior, so it sums to 1
-posterior <- unstd.posterior/sum(unstd.posterior)
+posterior = unstd.posterior/sum(unstd.posterior)
 
 plot(p_grid, posterior,
      xlab="probability of water", 
@@ -22,13 +22,13 @@ plot(p_grid, posterior,
 # 2)
 
 # earth surface mostly water
-prior <- ifelse(p_grid<0.5, 0, 1)
+prior = ifelse(p_grid<0.5, 0, 1)
 # the likelihood at each value in grid
-likelihood <- dbinom(4 , size=6, prob=p_grid)
+likelihood = dbinom(4 , size=6, prob=p_grid)
 # compute product of likelihood and prior
-unstd.posterior <- likelihood*prior
+unstd.posterior = likelihood*prior
 # standardize the posterior, so it sums to 1
-posterior <- unstd.posterior/sum(unstd.posterior)
+posterior = unstd.posterior/sum(unstd.posterior)
 
 plot(p_grid, posterior,
      xlab="probability of water", 
@@ -38,27 +38,51 @@ plot(p_grid, posterior,
 # 3)
 
 # sampling from the posterior
-samples <- sample(p_grid, size=1e4, replace=TRUE, prob=posterior)
+samples = sample(p_grid, size=1e4, replace=TRUE, prob=posterior)
 
 # 89% percentile and HPDI intervals
 abline(v = PI(samples, prob=.89 ), col = "red")
 abline(v = HPDI(samples, prob=.89), col = "blue")
 
 # 4)
-#AAAAAARGGGGH
 
-#water.discrimination = rbinom(1, 1, .2)
-#water.discrimination = sample(c("W","L"), 1, prob = )
-observations = rbinom(20, 1, .7)
-observations
-
-for (i in 1:20) { 
-observations[i] = ifelse(observations[i] == 1, rbinom(1, 1, .2), 0)
-}
-observations
+# "Who does not have brains has legs" - Greek folk wisdom
+# observations = rbinom(1e4, 1, .7)
+# sum(observations)/length(observations)
+# for (i in 1:1e4) { 
+# observations[i] = ifelse(observations[i] == 1, rbinom(1, 1, .8), 0)
+# }
+# sum(observations)/length(observations)
 
 
-water.discrimination = observations
-df = data.frame(observations=observations,
-                water.discrimination=water.discrimination)
-df$water.discrimination = ifelse(df$observations == 1, rbinom(1, 1, .2), 0)
+# A generative model that is land-biased would weigh the true probability of 
+# water by 1-.2=.8 giving .7*.8=.56 instead for a true proportion of .7
+tosses = 1e4
+true.proportion = .7
+observations = rbinom(tosses, 1, true.proportion*.8)
+sum(observations)/length(observations)
+
+
+# back to an unbiased scenario
+tosses = 20
+observations = rbinom(tosses, 1, true.proportion)
+
+# the prior
+prior = rep(1, n)
+# the likelihood at each value in grid
+likelihood = dbinom(sum(observations), size=tosses, prob=p_grid)
+# compute product of likelihood and prior
+unstd.posterior = likelihood*prior
+# standardize the posterior, so it sums to 1
+posterior = unstd.posterior/sum(unstd.posterior)
+
+plot(p_grid, posterior,
+     xlab="probability of water", 
+     ylab="posterior probability", 
+     type="b")
+
+samples = sample(p_grid, size=1e4, replace=TRUE, prob=posterior)
+
+w = rbinom(1e4, size=20, prob=.7) ; simplehist(w)
+w = rbinom(1e4, size=20, prob=samples) ; simplehist(w)
+
