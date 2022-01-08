@@ -1,6 +1,6 @@
 require(rethinking)
 
-# 1)
+# 1) ====
 
 n = 100
 # the grid
@@ -19,7 +19,7 @@ plot(p_grid, posterior,
      ylab="posterior probability", 
      type="b")
 
-# 2)
+# 2) ====
 
 # earth surface mostly water
 prior = ifelse(p_grid<0.5, 0, 1)
@@ -35,7 +35,7 @@ plot(p_grid, posterior,
      ylab="posterior probability", 
      type="p")
 
-# 3)
+# 3) ====
 
 # sampling from the posterior
 samples = sample(p_grid, size=1e4, replace=TRUE, prob=posterior)
@@ -44,7 +44,7 @@ samples = sample(p_grid, size=1e4, replace=TRUE, prob=posterior)
 abline(v = PI(samples, prob=.89 ), col = "red")
 abline(v = HPDI(samples, prob=.89), col = "blue")
 
-# 4)
+# 4) ====
 
 # "Who does not have brains has legs" - Greek folk wisdom
 # observations = rbinom(1e4, 1, .7)
