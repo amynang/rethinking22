@@ -3,8 +3,8 @@ require(rethinking)
 # 1) ====
 
 n = 100
-# the grid
 p_grid = seq(0, 1, length.out=n)
+
 # the prior
 prior = rep(1, n)
 # the likelihood at each value in grid
@@ -43,6 +43,12 @@ samples = sample(p_grid, size=1e4, replace=TRUE, prob=posterior)
 # 89% percentile and HPDI intervals
 abline(v = PI(samples, prob=.89 ), col = "red")
 abline(v = HPDI(samples, prob=.89), col = "blue")
+
+# The width and location difference come from the fact that PI will exclude 5.5%
+# from either extreme regardless of the density, while HPDI works from the mode 
+# outwards until it has 89% of the density, so it includes the rather probable 
+# bit that is left out by PI.
+# Neither interval would show us that the posterior is truncated below 0.5
 
 # 4) ====
 
