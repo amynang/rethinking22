@@ -22,7 +22,7 @@ m_cd <- ulam(alist(C ~ dbinom(N, p),
              data=d, 
              chains=4, 
              cores = 4,
-             log_lik=TRUE )
+             log_lik=TRUE)
 trankplot(m_cd, n_cols=2)
 
 precis(m_cd, depth = 2)
@@ -61,16 +61,42 @@ adjustmentSets(bangladesh_dag, "U", "C")
 #3)----
 d = list(C=bangladesh$use.contraception,
          D=as.integer(bangladesh$district),
-         U=ifelse(bangladesh$urban==0,1L,2L))
+         U=bangladesh$urban)
 
 m_cdu <- ulam(alist(C ~ dbern(p),
                     logit(p) <- a[D] + b*U,
-                    b ~ dnorm(0,.5),
+                    b ~ dnorm(0,1),
                     vector[61]:a ~ dnorm(a_bar, sigma),
                     a_bar ~ dnorm(0, 1),
                     sigma ~ dexp(1)), 
               data=d, 
               chains=4, 
+              iter=2000,
               cores = 4,
-              log_lik=TRUE )
+              log_lik=TRUE)
+trankplot(m_cdu, n_cols=2)
 precis(m_cdu)
+# women in urban areas overall more likely to use contraception
+
+d = list(C=bangladesh$use.contraception,
+         D=as.integer(bangladesh$district),
+         U=bangladesh$urban,
+         K=bangladesh$living.children,
+         A=standardize(bangladesh$age.centered)) #I peeked in the solutions for this - scale(bangladesh$age.centered, center=F) is not equivalent; no documentation for standardize()
+
+m_cduka <- ulam(alist(C ~ dbern(p),
+                      logit(p) <- a[D] + bu*U + ba*A + bk*K,
+                      bu ~ dnorm(0,1),
+                      ba ~ dnorm(0,1),
+                      bk ~ dnorm(0,1),
+                      vector[61]:a ~ dnorm(a_bar, sigma),
+                      a_bar ~ dnorm(0, 1),
+                      sigma ~ dexp(1)), 
+                data=d, 
+                chains=4, 
+                iter=3000,
+                cores = 4,
+                log_lik=TRUE)
+trankplot(m_cduka, n_cols=2)
+precis(m_cduka)
+# direct effect of living in uran areas is similar to the overall effect

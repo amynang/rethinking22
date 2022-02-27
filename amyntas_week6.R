@@ -57,57 +57,24 @@ beepr::beep(9)
 xseq <- c(1:48)
 mu <- link( m.tank_1 , post = prior1 , data=list(tank=xseq))
 plot( NULL , xlim=c(1,48) , ylim=0:1 )
-for ( i in 1:100 ) points( xseq , inv_logit(mu[i,]) , col=col.alpha("black",0.1) )
+for ( i in 1:100 ) points( xseq , mu[i,] , col=col.alpha("black",0.1) )
 plot(density(mu[,1]))
 
 mu <- link( m.tank_0.1 , post = prior2 , data=list(tank=xseq))
 plot( NULL , xlim=c(1,48) , ylim=c(0,1) )
-for ( i in 1:100 ) points( xseq , (mu[i,]) , col=col.alpha("black",0.1) )
+for ( i in 1:100 ) points( xseq , mu[i,] , col=col.alpha("black",0.1) )
 plot(density((mu[,1])))
 
 
 mu <- link( m.tank_10 , post = prior3 , data=list(tank=xseq))
 plot( NULL , xlim=c(1,48) , ylim=0:1 )
-for ( i in 1:100 ) points( xseq , inv_logit(mu[i,]) , col=col.alpha("black",0.3) )
-
+for ( i in 1:100 ) points( xseq , mu[i,] , col=col.alpha("black",0.3) )
+plot(density((mu[,1])))
 # reducing the prior on sigma widens the prior distribution of aj
 
-N=1000
-a_bar = rnorm(N, 0, 1)
-sigma = rexp(N, .1)
-a.j = rnorm(N, a_bar, sigma)
-plot(density(inv_logit(a.j)))
-
-sigma = rexp(N, 1)
-a.j = rnorm(N, a_bar, sigma)
-plot(density(inv_logit(a.j)))
-
-sigma = rexp(N, 10)
-a.j = rnorm(N, a_bar, sigma)
-plot(density(inv_logit(a.j)))
-
-# extract Stan samples
-post <- extract.samples(m.tank)
-# compute median intercept for each tank
-# also transform to probability with logistic
-d$propsurv.est <- logistic( apply( post$a , 2 , mean ) )
-# display raw proportions surviving in each tank
-plot( d$propsurv , ylim=c(0,1) , pch=16 , xaxt="n" ,
-      xlab="tank" , ylab="proportion survival" , col=rangi2 )
-axis( 1 , at=c(1,16,32,48) , labels=c(1,16,32,48) )
-# overlay posterior means
-points( d$propsurv.est )
-# mark posterior mean probability across tanks
-abline( h=mean(inv_logit(post$a_bar)) , lty=2 )
-# draw vertical dividers between tank densities
-abline( v=16.5 , lwd=0.5 )
-abline( v=32.5 , lwd=0.5 )
-text( 8 , 0 , "small tanks" )
-text( 16+8 , 0 , "medium tanks" )
-text( 32+8 , 0 , "large tanks" )
 
 #2) ----
-
+library(dagitty)
 dat <- list(
   S = d$surv,
   D = d$density,
@@ -115,6 +82,12 @@ dat <- list(
   P = ifelse(d$pred=="no",1L,2L),
   G = ifelse(d$size=="small",1L,2L)
 )
+
+dag <- dagitty('dag {D->S 
+                     T->S 
+                     P->S 
+                     G->S}')
+plot(dag)
 
 mSPG <- ulam(
   alist(
@@ -127,10 +100,11 @@ mSPG <- ulam(
   ), data=dat, chains=4, cores = 4, log_lik=TRUE)
 
 precis(mSPG, depth = 3)
+# predation reduces survival, size increases survival in the absence of predators
+# reduces it in their presence
 
-post <- extract.samples(mSPG)
 
-dens(post$sigma)
+
 
 #3) ----
 
@@ -159,8 +133,10 @@ mSDPG <- ulam(
   ), data=dat, chains=4, cores = 4, log_lik=TRUE)
 
 precis(mSDPG, depth = 3)
+post.mSPG <- extract.samples(mSPG)
+post.mSDPG <- extract.samples(mSDPG)
 
-post <- extract.samples(mSDPG)
-dens(post$sigma)
-
+dens(post.mSPG$sigma)
+dens(post.mSDPG$sigma)
+# sigma of the last model is lower; density acounts for some of the variation
 
