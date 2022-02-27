@@ -59,13 +59,13 @@ adjustmentSets(bangladesh_dag, "U", "C")
 
 
 #3)----
-d = list(C=scale(bangladesh$use.contraception, center = F),
+d = list(C=bangladesh$use.contraception,
          D=as.integer(bangladesh$district),
          U=ifelse(bangladesh$urban==0,1L,2L))
 
 m_cdu <- ulam(alist(C ~ dbern(p),
                     logit(p) <- a[D] + b*U,
-                    b ~ dnorm(0,1),
+                    b ~ dnorm(0,.5),
                     vector[61]:a ~ dnorm(a_bar, sigma),
                     a_bar ~ dnorm(0, 1),
                     sigma ~ dexp(1)), 
